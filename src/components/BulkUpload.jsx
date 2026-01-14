@@ -13,13 +13,15 @@ export default function BulkUpload() {
   const [loading, setLoading] = useState(false);
   const [downloadFilter, setDownloadFilter] = useState("All");
 
-  const VITE_API_BASE = import.meta.env.VITE_API_BASE; // ✅ Correct env usage
+  // ✅ NEW: progress counter
+  const [processedCount, setProcessedCount] = useState(0);
+
+  const VITE_API_BASE = import.meta.env.VITE_API_BASE;
 
   const handleFileUpload = (e) => {
     const uploadedFile = e.target.files[0];
     if (!uploadedFile) return;
 
-    // ✅ File size check (max 5MB)
     if (uploadedFile.size > 5 * 1024 * 1024) {
       alert("File size exceeds 5MB limit.");
       return;
@@ -41,7 +43,7 @@ export default function BulkUpload() {
       const reader = new FileReader();
       reader.onload = (evt) => {
         const data = evt.target.result;
-        const workbook = XLSX.read(data, { type: "array" }); // ✅ use array
+        const workbook = XLSX.read(data, { type: "array" });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
         const extractedEmails = jsonData
@@ -49,19 +51,20 @@ export default function BulkUpload() {
           .filter((val) => typeof val === "string" && val.includes("@"));
         setEmails(extractedEmails);
       };
-      reader.readAsArrayBuffer(uploadedFile); // ✅ updated
+      reader.readAsArrayBuffer(uploadedFile);
     } else {
       alert("Please upload a valid CSV or Excel file.");
     }
   };
 
-  // 🚀 FAST BULK VERIFICATION USING BATCHING
+  // 🚀 BULK VERIFICATION WITH PROGRESS
   const verifyAll = async () => {
     if (emails.length === 0) return;
 
     setLoading(true);
+    setProcessedCount(0);
 
-    const BATCH_SIZE = 20; 
+    const BATCH_SIZE = 20;
     const verified = [];
 
     for (let i = 0; i < emails.length; i += BATCH_SIZE) {
@@ -70,15 +73,29 @@ export default function BulkUpload() {
       const batchResults = await Promise.all(
         batch.map(async (email) => {
           try {
-            const res = await axios.post(`${VITE_API_BASE}/api/email/verify`, { email });
-            return { email, status: res.data.status, reason: res.data.reason };
+            const res = await axios.post(
+              `${VITE_API_BASE}/api/email/verify`,
+              { email }
+            );
+            return {
+              email,
+              status: res.data.status,
+              reason: res.data.reason,
+            };
           } catch {
-            return { email, status: "Error", reason: "Server not reachable" };
+            return {
+              email,
+              status: "Error",
+              reason: "Server not reachable",
+            };
           }
         })
       );
 
       verified.push(...batchResults);
+
+      // ✅ update progress
+      setProcessedCount((prev) => prev + batchResults.length);
     }
 
     setResults(verified);
@@ -107,17 +124,33 @@ export default function BulkUpload() {
 
   const downloadCSV = () => {
     let filteredResults = results;
-    if (downloadFilter !== "All")
-      filteredResults = results.filter((r) => r.status === downloadFilter);
+    if (downloadFilter !== "All") {
+      filteredResults = results.filter(
+        (r) => r.status === downloadFilter
+      );
+    }
 
-    const csvRows = [["Email", "Status", "Reason"], ...filteredResults.map((r) => [r.email, r.status, r.reason])];
+    const csvRows = [
+      ["Email", "Status", "Reason"],
+      ...filteredResults.map((r) => [
+        r.email,
+        r.status,
+        r.reason,
+      ]),
+    ];
+
     const csvContent = csvRows.map((e) => e.join(",")).join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
     const url = URL.createObjectURL(blob);
     const date = new Date().toISOString().split("T")[0];
 
-    // ✅ Corrected file name for CSV & Excel
-    const baseName = file ? file.name.replace(/\.(csv|xlsx|xls)/i, "") : `verified_results_${date}`;
+    const baseName = file
+      ? file.name.replace(/\.(csv|xlsx|xls)/i, "")
+      : `verified_results_${date}`;
+
     const fileName =
       downloadFilter === "All"
         ? `${baseName}_results_${date}.csv`
@@ -137,15 +170,42 @@ export default function BulkUpload() {
 
   return (
     <div className="p-6">
+      {/* ✅ VALIDATING SCREEN */}
       {loading && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white px-10 py-8 rounded-xl shadow-xl text-center space-y-3">
-            <h2 className="text-3xl font-bold text-teal-600">Validating...</h2>
-            <p className="text-gray-600 text-sm">Do not close or refresh this tab</p>
-            <div className="animate-spin w-12 h-12 border-4 border-teal-500 border-t-transparent mx-auto rounded-full" />
+          <div className="bg-white px-10 py-8 rounded-xl shadow-xl text-center space-y-4 w-80">
+            <h2 className="text-3xl font-bold text-teal-600">
+              Validating...
+            </h2>
+
+            <p className="text-gray-600 text-sm">
+              {processedCount} / {emails.length} emails verified
+            </p>
+
+            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+              <div
+                className="bg-teal-500 h-3 transition-all duration-300"
+                style={{
+                  width: `${
+                    emails.length
+                      ? (processedCount / emails.length) * 100
+                      : 0
+                  }%`,
+                }}
+              />
+            </div>
+
+            <div className="animate-spin w-10 h-10 border-4 border-teal-500 border-t-transparent mx-auto rounded-full" />
+
+            <p className="text-xs text-gray-500">
+              Do not close or refresh this tab
+            </p>
           </div>
         </div>
       )}
+
+      
+
 
       <h2 className="text-5xl font-bold mb-6 text-teal-600 text-center">Bulk Email Verification</h2>
 
