@@ -86,7 +86,7 @@ export default function Sidebar() {
         `${linkStyle} ${isActive ? activeStyle : ""}`
       }
     >
-      <User size={20} /> Profile
+      <User size={20} /> My Profile
     </NavLink>
   </div>
 </nav>
