@@ -1,19 +1,21 @@
-//frontend/pages/Profile.js
-import { useEffect, useState } from "react";
+// frontend/pages/Profile.js
+import { useEffect, useState, useContext } from "react";
 import axios from "axios";
-import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
-  const { token } = useContext(AuthContext);
+  const { token, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
   const [user, setUser] = useState(null);
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
 
-  // Simulated subscription state (UI only)
-  const [subscription, setSubscription] = useState({
+  // UI-only subscription state
+  const [subscription] = useState({
     status: "Not Subscribed",
   });
 
@@ -33,7 +35,7 @@ export default function Profile() {
     };
 
     fetchProfile();
-  }, []);
+  }, [token, VITE_API_BASE]);
 
   const handleUpdate = async () => {
     setLoading(true);
@@ -56,15 +58,32 @@ export default function Profile() {
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   if (!user) return null;
 
   return (
     <div className="max-w-5xl mx-auto mt-8 space-y-6">
-      <h2 className="text-3xl font-semibold text-teal-600 mb-6">My Profile</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-3xl font-semibold text-teal-600">
+          My Profile
+        </h2>
+
+        {/* ✅ Logout ONLY here */}
+        <button
+          onClick={handleLogout}
+          className="py-2 px-4 bg-red-500 text-white rounded hover:bg-red-600"
+        >
+          Logout
+        </button>
+      </div>
 
       {msg && (
         <div
-          className={`mb-4 p-3 rounded ${
+          className={`p-3 rounded ${
             msg.type === "error"
               ? "bg-red-100 text-red-700"
               : "bg-green-100 text-green-700"
@@ -118,8 +137,7 @@ export default function Profile() {
                   setIsEditing(false);
                   setName(user.name || "");
                 }}
-                disabled={loading}
-                className="py-2 px-4 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 disabled:opacity-60"
+                className="py-2 px-4 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
               >
                 Cancel
               </button>
@@ -128,29 +146,24 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* Subscription Section (UI only, no action) */}
-      <div className="ml-45 mr-45 p-6 border border-gray-300 rounded-md bg-white space-y-4">
-        <h3 className="text-2xl font-semibold text-teal-600">Subscription</h3>
-        <p className="text-gray-600">Manage your subscription details</p>
+      {/* Subscription (UI only) */}
+      <div className="p-6 border border-gray-300 rounded-md bg-white space-y-4">
+        <h3 className="text-2xl font-semibold text-teal-600">
+          Subscription
+        </h3>
+        <p className="text-gray-600">
+          Manage your subscription details
+        </p>
         <p className="text-gray-800">
           You are currently:{" "}
           <span className="font-medium">{subscription.status}</span>
         </p>
 
-        {/* Buttons are inert */}
-        {subscription.status !== "Active" ? (
-          <button
-            className="mt-2 py-2 px-4 bg-teal-500 text-white rounded cursor-not-allowed opacity-60"
-          >
-            Subscribe Now
-          </button>
-        ) : (
-          <button
-            className="mt-2 py-2 px-4 bg-gray-500 text-white rounded cursor-not-allowed opacity-60"
-          >
-            Manage Subscription
-          </button>
-        )}
+        <button
+          className="py-2 px-4 bg-teal-500 text-white rounded cursor-not-allowed opacity-60"
+        >
+          Subscribe Now
+        </button>
       </div>
     </div>
   );
