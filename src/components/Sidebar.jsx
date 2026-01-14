@@ -94,8 +94,9 @@ export default function Sidebar() {
 
       {/* Footer */}
       <footer className="text-center py-4 text-sm text-gray-400 border-t">
-        © 2025 Email Verifier
-      </footer>
+  © {new Date().getFullYear()} Email Verifier
+</footer>
+
     </aside>
   );
 }
