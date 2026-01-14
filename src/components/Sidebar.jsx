@@ -3,6 +3,7 @@ import { Mail, Upload, Clock, Shield } from "lucide-react";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import logo from "../assets/logo.png";
+import { User } from "lucide-react";
 
 export default function Sidebar() {
   const { isAdmin } = useContext(AuthContext);
@@ -25,55 +26,71 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 flex flex-col gap-2 p-4">
-        <NavLink
-          to="/"
-          className={({ isActive }) =>
-            `${linkStyle} ${isActive ? activeStyle : ""}`
-          }
-        >
-          <Mail size={20} /> Single Verify
-        </NavLink>
+     <nav className="flex-1 flex flex-col justify-between p-4 h-full">
+  {/* Top Links */}
+  <div className="flex flex-col gap-2">
+    <NavLink
+      to="/"
+      className={({ isActive }) =>
+        `${linkStyle} ${isActive ? activeStyle : ""}`
+      }
+    >
+      <Mail size={20} /> Single Verify
+    </NavLink>
 
-        <NavLink
-          to="/bulk"
-          className={({ isActive }) =>
-            `${linkStyle} ${isActive ? activeStyle : ""}`
-          }
-        >
-          <Upload size={20} /> Bulk Upload
-        </NavLink>
+    <NavLink
+      to="/bulk"
+      className={({ isActive }) =>
+        `${linkStyle} ${isActive ? activeStyle : ""}`
+      }
+    >
+      <Upload size={20} /> Bulk Upload
+    </NavLink>
 
-        <NavLink
-          to="/recent"
-          className={({ isActive }) =>
-            `${linkStyle} ${isActive ? activeStyle : ""}`
-          }
-        >
-          <Clock size={20} /> Recent Lists
-        </NavLink>
+    <NavLink
+      to="/recent"
+      className={({ isActive }) =>
+        `${linkStyle} ${isActive ? activeStyle : ""}`
+      }
+    >
+      <Clock size={20} /> Recent Lists
+    </NavLink>
 
-        {/* 🔒 ADMIN ONLY */}
-        {isAdmin && (
-          <NavLink
-            to="/weekly"
-            className={({ isActive }) =>
-              `${linkStyle} ${isActive ? activeStyle : ""}`
-            }
-          >
-            <Clock size={20} /> Weekly Good Emails
-          </NavLink>
-        )}
+    {/* 🔒 ADMIN ONLY */}
+    {isAdmin && (
+      <NavLink
+        to="/weekly"
+        className={({ isActive }) =>
+          `${linkStyle} ${isActive ? activeStyle : ""}`
+        }
+      >
+        <Clock size={20} /> Weekly Good Emails
+      </NavLink>
+    )}
 
-        <NavLink
-          to="/catchall"
-          className={({ isActive }) =>
-            `${linkStyle} ${isActive ? activeStyle : ""}`
-          }
-        >
-          <Shield size={20} /> Catch-All Check
-        </NavLink>
-      </nav>
+    <NavLink
+      to="/catchall"
+      className={({ isActive }) =>
+        `${linkStyle} ${isActive ? activeStyle : ""}`
+      }
+    >
+      <Shield size={20} /> Catch-All Check
+    </NavLink>
+  </div>
+
+  {/* Profile Link at Bottom */}
+  <div className="mt-auto">
+    <NavLink
+      to="/profile"
+      className={({ isActive }) =>
+        `${linkStyle} ${isActive ? activeStyle : ""}`
+      }
+    >
+      <User size={20} /> Profile
+    </NavLink>
+  </div>
+</nav>
+
 
       {/* Footer */}
       <footer className="text-center py-4 text-sm text-gray-400 border-t">

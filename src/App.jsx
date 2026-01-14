@@ -1,32 +1,3 @@
-// import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-// import Sidebar from "./components/Sidebar";
-// import Header from "./components/Header";
-// import SingleEmail from "./pages/SingleEmail";
-// import BulkUpload from "./pages/BulkUpload";
-// import RecentLists from "./pages/RecentLists";
-// import CatchAll from "./pages/CatchAll";
-
-// export default function App() {
-//   return (
-//     <Router>
-//       <div className="flex min-h-screen bg-gray-50">
-//         <Sidebar />
-//         <div className="flex-1 flex flex-col overflow-y-auto ml-64">
-
-//           <main className="flex-1 p-6">
-//             <Routes>
-//               <Route path="/" element={<SingleEmail />} />
-//               <Route path="/bulk" element={<BulkUpload />} />
-//               <Route path="/recent" element={<RecentLists />} />
-//               <Route path="/catchall" element={<CatchAll />} />
-//             </Routes>
-//           </main>
-//         </div>
-//       </div>
-//     </Router>
-//   );
-// }
-// frontend/src/App.jsx
 // frontend/src/App.jsx
 import {
   BrowserRouter as Router,
@@ -45,6 +16,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ProtectedRoute from "./components/ProtectedRoute";
 import WeeklyGoodEmails from "./pages/WeeklyGoodEmails";
+import Profile from "./pages/Profile";
 
 
 
@@ -82,6 +54,7 @@ function AppContent() {
                 </ProtectedRoute>
               }
             />
+            
             <Route
               path="/recent"
               element={
@@ -98,6 +71,15 @@ function AppContent() {
                 </ProtectedRoute>
               }
             />
+            <Route
+  path="/profile"
+  element={
+    <ProtectedRoute>
+      <Profile />
+    </ProtectedRoute>
+  }
+/>
+
           <Route
   path="/weekly"
   element={
