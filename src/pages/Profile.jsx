@@ -1,4 +1,3 @@
-// frontend/pages/Profile.js
 import { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
@@ -10,7 +9,8 @@ export default function Profile() {
 
   const [user, setUser] = useState(null);
   const [name, setName] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // button loading
+  const [pageLoading, setPageLoading] = useState(true); // page loading
   const [msg, setMsg] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -27,10 +27,13 @@ export default function Profile() {
         const res = await axios.get(`${VITE_API_BASE}/api/profile`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+
         setUser(res.data);
         setName(res.data.name || "");
-      } catch {
+      } catch (err) {
         setMsg({ type: "error", text: "Failed to load profile" });
+      } finally {
+        setPageLoading(false); // ✅ IMPORTANT
       }
     };
 
@@ -63,6 +66,18 @@ export default function Profile() {
     navigate("/login");
   };
 
+  // ✅ LOADING UI (NO BLANK SCREEN)
+  if (pageLoading) {
+    return (
+      <div className="flex justify-center items-center h-[60vh]">
+        <div className="text-gray-500 text-lg animate-pulse">
+          Loading profile...
+        </div>
+      </div>
+    );
+  }
+
+  // Safety fallback
   if (!user) return null;
 
   return (
@@ -72,7 +87,7 @@ export default function Profile() {
           My Profile
         </h2>
 
-        {/* ✅ Logout ONLY here */}
+        {/* Logout ONLY on profile */}
         <button
           onClick={handleLogout}
           className="py-2 px-4 bg-red-500 text-white rounded hover:bg-red-600"
@@ -137,6 +152,7 @@ export default function Profile() {
                   setIsEditing(false);
                   setName(user.name || "");
                 }}
+                disabled={loading}
                 className="py-2 px-4 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
               >
                 Cancel
